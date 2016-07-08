@@ -36,6 +36,7 @@ public class StressTestMemoryDBHTreeMap {
 				cache.put(TestUtil.generateRandomMSISDN(), subscriberDocument);
 			} catch (Throwable th) {
 				System.err.println("Last count " + i);
+				break;
 			}
 		}
 		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
