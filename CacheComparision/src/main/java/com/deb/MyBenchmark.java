@@ -32,13 +32,38 @@
 package com.deb;
 
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
+
+import com.couchbase.client.java.document.JsonDocument;
+import com.deb.cache.Cache;
+import com.deb.cache.CacheType;
+import com.deb.cache.TestUtil;
 
 public class MyBenchmark {
+	
+	private static final JsonDocument myDocument = TestUtil.createJsonDocument();
+	
+	@State(Scope.Benchmark)
+	public static class MapDBFileHolder {
+		public static  Cache mapDBCache;
+		static{
+			mapDBCache = new Cache(CacheType.MAPDB_FILE_TREEMAP_DOC, "temp.db", 1000000);
+		}
+	}
 
+	/**
+	 * MyBenchmark.mapDBFile  thrpt  200  779.527 ± 18.967  ops/s
+	 */
     @Benchmark
-    public void testMethod() {
-        // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
-        // Put your benchmark code here.
+    public void mapDBFilePut() {
+        MapDBFileHolder.mapDBCache.put(TestUtil.generateRandomMSISDN(), myDocument);
     }
+    
+    @Benchmark
+    public void mapDBFileGet() {
+        MapDBFileHolder.mapDBCache.get(TestUtil.generateRandomMSISDN());
+    }
+
 
 }

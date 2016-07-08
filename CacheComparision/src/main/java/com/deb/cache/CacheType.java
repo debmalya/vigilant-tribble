@@ -21,6 +21,10 @@ package com.deb.cache;
  */
 public enum CacheType {
 	/**
+	 * MapDB 
+	 */
+	MAPDB_MEMORY_HTREE_DOC,
+	/**
 	 * MapDB in memory tree map containing String.
 	 */
 	MAPDB_MEMORY_TREEMAP_STR,
