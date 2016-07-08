@@ -15,22 +15,28 @@
  */
 package com.deb.cache;
 
+import com.couchbase.client.java.document.JsonDocument;
+
 /**
  * @author debmalyajash
  *
  */
 public class StressTestMemoryDBHTreeMap {
-	
-	
+
+	private static JsonDocument subscriberDocument = TestUtil.createJsonDocument();
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
-		Cache cache = new Cache(CacheType.MAPDB_MEMORY_DIRECT_HTREE_DOC, "temp.db", TestUtil.ONE_MILLION);
+		Cache cache = new Cache(CacheType.MAPDB_MEMORY_DIRECT_HTREE_DOC, "temp.db", TestUtil.ONE_BILLION);
 		for (long i = 0; i < TestUtil.ONE_BILLION; i++) {
-			cache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
+			try {
+				cache.put(TestUtil.generateRandomMSISDN(), subscriberDocument);
+			} catch (Throwable th) {
+				System.err.println("Last count " + i);
+			}
 		}
 		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
 
