@@ -28,7 +28,7 @@ public class StressTestMemoryDBHTreeMap {
 	 */
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
-		Cache cache = new Cache(CacheType.MAPDB_MEMORY_HTREE_DOC, "temp.db", TestUtil.ONE_MILLION);
+		Cache cache = new Cache(CacheType.MAPDB_MEMORY_DIRECT_HTREE_DOC, "temp.db", TestUtil.ONE_MILLION);
 		for (long i = 0; i < TestUtil.ONE_BILLION; i++) {
 			cache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 		}

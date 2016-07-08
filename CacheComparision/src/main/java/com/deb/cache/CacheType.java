@@ -22,6 +22,7 @@ package com.deb.cache;
 public enum CacheType {
 	/**
 	 * MapDB 
+	 * 
 	 */
 	MAPDB_MEMORY_HTREE_DOC,
 	/**
@@ -40,5 +41,11 @@ public enum CacheType {
 	/**
 	 * LRU linked hash Map.
 	 */
-	LRULINKED_HASH_MAP;
+	LRULINKED_HASH_MAP, 
+	
+	
+	/**
+	 * MapDB Memory Direct DB
+	 */
+	MAPDB_MEMORY_DIRECT_HTREE_DOC;
 }

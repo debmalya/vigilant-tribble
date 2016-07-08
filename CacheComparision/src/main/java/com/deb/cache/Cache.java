@@ -64,6 +64,13 @@ public class Cache {
 					.valueSerializer(Serializer.JAVA).createOrOpen();
 			
 			break;
+			
+		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
+			db = DBMaker.memoryDirectDB().make();
+			jsonDocumentHTreeMap = (HTreeMap<String, JsonDocument>)db.hashMap("MAPDB_MEMORY_HTREE_DOC").expireMaxSize(starterSize).keySerializer(Serializer.STRING)
+					.valueSerializer(Serializer.JAVA).createOrOpen();
+			
+			break;	
 		default:
 			break;
 		}
@@ -79,6 +86,10 @@ public class Cache {
 			lruPandaCache.put(key, value);
 			break;
 		case MAPDB_MEMORY_HTREE_DOC:
+			jsonDocumentHTreeMap.put(key, value);
+			break;
+			
+		case MAPDB_MEMORY_DIRECT_HTREE_DOC:	
 			jsonDocumentHTreeMap.put(key, value);
 			break;
 		default:
