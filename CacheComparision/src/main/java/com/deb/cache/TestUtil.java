@@ -14,6 +14,8 @@ import com.couchbase.client.java.document.JsonDocument;
  *
  */
 public class TestUtil {
+	
+	public static final long ONE_BILLION = 1000000000L;
 
 	public static final String serverIp = "192.168.251.171";
 	/**

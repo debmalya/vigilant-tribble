@@ -27,7 +27,7 @@ public class StressTest {
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
 		Cache cache = new Cache(CacheType.MAPDB_FILE_TREEMAP_DOC, "temp.db", TestUtil.ONE_MILLION);
-		for (int i = 0; i < TestUtil.ONE_MILLION; i++) {
+		for (int i = 0; i < TestUtil.ONE_BILLION; i++) {
 			cache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 		}
 		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
