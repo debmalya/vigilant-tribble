@@ -36,6 +36,7 @@ public class Cache {
 	private static BTreeMap<String, JsonDocument> jsonDocumentBTreeMap;
 	private static BTreeMap<String, String> jsonStringTBreeMap;
 	private static HTreeMap<String, String> jsonHTreeMap;
+	private static LRUPandaCache<String, JsonDocument> lruPandaCache;
 
 	private static CacheType cacheType;
 
@@ -55,6 +56,10 @@ public class Cache {
 		case MAPDB_MEMORY_TREEMAP_STR:
 			db = DBMaker.memoryDB().allocateStartSize(starterSize).make();
 			break;
+		case LRULINKED_HASH_MAP:
+			lruPandaCache = new LRUPandaCache<String, JsonDocument>(100000, 0.75f);
+			break;
+			
 		default:
 			break;
 		}
@@ -65,6 +70,9 @@ public class Cache {
 		switch(cacheType) {
 		case MAPDB_FILE_TREEMAP_DOC:
 			document = jsonDocumentBTreeMap.put(key, value);
+			break;
+		case LRULINKED_HASH_MAP:
+			lruPandaCache.put(key, value);
 			break;
 		default:
 			typeNotSupported();
@@ -84,6 +92,9 @@ public class Cache {
 		switch(cacheType) {
 		case MAPDB_FILE_TREEMAP_DOC:
 			document = jsonDocumentBTreeMap.get(key);
+			break;
+		case LRULINKED_HASH_MAP:
+			document = lruPandaCache.get(key);
 			break;
 		default:
 			typeNotSupported();

@@ -19,22 +19,19 @@ package com.deb.cache;
  * @author debmalyajash
  *
  */
-public enum CacheType {
+public class StressTestLRUHashMap {
+
 	/**
-	 * MapDB in memory tree map containing String.
+	 * @param args
 	 */
-	MAPDB_MEMORY_TREEMAP_STR,
-	/**
-	 * MapDB file with BTreeMap containing JsonDocument.
-	 */
-	MAPDB_FILE_TREEMAP_DOC,
-	/**
-	 * MapDB file with BTreemap containing string.
-	 */
-	MAPDB_FILE_TREEMAP_STR,
-	
-	/**
-	 * LRU linked hash Map.
-	 */
-	LRULINKED_HASH_MAP;
+	public static void main(String[] args) {
+		long startTime = System.currentTimeMillis();
+		Cache cache = new Cache(CacheType.LRULINKED_HASH_MAP, "temp.db", TestUtil.ONE_MILLION);
+		for (int i = 0; i < TestUtil.ONE_MILLION; i++) {
+			cache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
+		}
+		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
+
+	}
+
 }

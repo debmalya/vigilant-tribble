@@ -33,9 +33,12 @@ public class CacheTest {
 	
 	private static Cache myCache;
 	
+	private static Cache lruPandaCache;
+	
 	@BeforeClass
 	public static void init(){
 		myCache = new Cache(CacheType.MAPDB_FILE_TREEMAP_DOC, "temp.db", TestUtil.ONE_MILLION);
+		lruPandaCache = new Cache(CacheType.LRULINKED_HASH_MAP, "temp.db", TestUtil.ONE_MILLION);
 	}
 
 	/**
@@ -44,6 +47,7 @@ public class CacheTest {
 	@Test
 	public void testCache() {
 		Assert.assertNotNull(myCache);
+		Assert.assertNotNull(lruPandaCache);
 	}
 
 	/**
@@ -52,6 +56,7 @@ public class CacheTest {
 	@Test
 	public void testPutStringJsonDocument() {
 		myCache.put(TestUtil.generateRandomMSISDN(),TestUtil.createJsonDocument());
+		lruPandaCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 	}
 
 	/**
