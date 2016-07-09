@@ -16,6 +16,7 @@
 package com.deb.cache;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
@@ -60,17 +61,19 @@ public class Cache {
 			break;
 		case MAPDB_MEMORY_HTREE_DOC:
 			db = DBMaker.memoryDB().make();
-			jsonDocumentHTreeMap = (HTreeMap<String, JsonDocument>)db.hashMap("MAPDB_MEMORY_HTREE_DOC").expireMaxSize(starterSize).keySerializer(Serializer.STRING)
-					.valueSerializer(Serializer.JAVA).createOrOpen();
-			
+			jsonDocumentHTreeMap = (HTreeMap<String, JsonDocument>) db.hashMap("MAPDB_MEMORY_HTREE_DOC")
+					.expireMaxSize(starterSize).keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA)
+					.expireAfterCreate().createOrOpen();
+
 			break;
-			
+
 		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
 			db = DBMaker.memoryDirectDB().make();
-			jsonDocumentHTreeMap = (HTreeMap<String, JsonDocument>)db.hashMap("MAPDB_MEMORY_HTREE_DOC").expireMaxSize(starterSize).keySerializer(Serializer.STRING)
-					.valueSerializer(Serializer.JAVA).createOrOpen();
-			
-			break;	
+			jsonDocumentHTreeMap = (HTreeMap<String, JsonDocument>) db.hashMap("MAPDB_MEMORY_HTREE_DOC")
+					.expireMaxSize(starterSize).keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA)
+					.expireAfterCreate(10,TimeUnit.MINUTES).createOrOpen();
+
+			break;
 		default:
 			break;
 		}
@@ -88,8 +91,8 @@ public class Cache {
 		case MAPDB_MEMORY_HTREE_DOC:
 			jsonDocumentHTreeMap.put(key, value);
 			break;
-			
-		case MAPDB_MEMORY_DIRECT_HTREE_DOC:	
+
+		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
 			jsonDocumentHTreeMap.put(key, value);
 			break;
 		default:
