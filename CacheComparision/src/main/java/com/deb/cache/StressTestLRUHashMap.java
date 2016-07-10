@@ -29,9 +29,7 @@ public class StressTestLRUHashMap {
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
 		Cache cache = new Cache(CacheType.LRULINKED_HASH_MAP, "temp.db", TestUtil.ONE_MILLION);
-		for (long i = 0; i < TestUtil.ONE_BILLION; i++) {
-			cache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
-		}
+		TestUtil.billionaire(cache);
 		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
 
 	}

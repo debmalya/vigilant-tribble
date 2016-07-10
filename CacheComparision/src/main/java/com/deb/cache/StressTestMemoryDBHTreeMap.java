@@ -23,7 +23,7 @@ import com.couchbase.client.java.document.JsonDocument;
  */
 public class StressTestMemoryDBHTreeMap {
 
-	private static JsonDocument subscriberDocument = TestUtil.createJsonDocument();
+	
 
 	/**
 	 * @param args
@@ -31,16 +31,11 @@ public class StressTestMemoryDBHTreeMap {
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
 		Cache cache = new Cache(CacheType.MAPDB_MEMORY_DIRECT_HTREE_DOC, "temp.db", TestUtil.ONE_BILLION);
-		for (long i = 0; i < TestUtil.ONE_BILLION; i++) {
-			try {
-				cache.put(TestUtil.generateRandomMSISDN(), subscriberDocument);
-			} catch (Throwable th) {
-				System.err.println("Last count " + i);
-				break;
-			}
-		}
+		TestUtil.billionaire(cache);
 		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
 
 	}
+
+	
 
 }

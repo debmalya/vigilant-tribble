@@ -15,6 +15,8 @@ import com.couchbase.client.java.document.JsonDocument;
  */
 public class TestUtil {
 	
+	public static JsonDocument subscriberDocument = TestUtil.createJsonDocument();
+	
 	public static final long ONE_BILLION = 1000000000L;
 
 	public static final String serverIp = "192.168.251.171";
@@ -23,7 +25,7 @@ public class TestUtil {
 	 */
 	private static final int SEED_FOR_RANDOM_MSISDN_GENERATION = 100000000;
 
-	private static final Random random = new Random(SEED_FOR_RANDOM_MSISDN_GENERATION);
+	private static Random random = new Random(SEED_FOR_RANDOM_MSISDN_GENERATION);
 
 	public static final String JSON_VALUE = "{\"a\":\"A\"}";
 
@@ -91,6 +93,9 @@ public class TestUtil {
 	 * @return random MSISDN number.
 	 */
 	public static String generateRandomMSISDN() {
+		if (random == null) {
+			random = new Random(SEED_FOR_RANDOM_MSISDN_GENERATION);
+		}
 		return String.valueOf(random.nextInt());
 	}
 
@@ -116,5 +121,20 @@ public class TestUtil {
 		JsonDocument document = JsonDocument.create(generateRandomMSISDN(),CSON_OBJ);
 		
 		return document;
+	}
+	
+	/**
+	 * To test cache with one billion put requests.
+	 * @param cache
+	 */
+	public static void billionaire(Cache cache) {
+		for (long i = 0; i < TestUtil.ONE_BILLION; i++) {
+			try {
+				cache.put(TestUtil.generateRandomMSISDN(), subscriberDocument);
+			} catch (Throwable th) {
+				System.err.println("!! ERR, Sorry can not continue after " + i + " !!");
+				break;
+			}
+		}
 	}
 }
