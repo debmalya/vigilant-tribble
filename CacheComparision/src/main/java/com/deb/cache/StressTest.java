@@ -26,8 +26,8 @@ public class StressTest {
 	 */
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
-		Cache cache = new Cache(CacheType.MAPDB_MEMORY_HTREE_DOC, "temp.db", TestUtil.ONE_MILLION);
-		TestUtil.billionaire(cache);
+		MyCache cache = new MyCache(CacheType.MAPDB_MEMORY_HTREE_DOC, "temp.db", TestUtil.ONE_MILLION);
+		TestUtil.plentous(cache);
 		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
 
 	}

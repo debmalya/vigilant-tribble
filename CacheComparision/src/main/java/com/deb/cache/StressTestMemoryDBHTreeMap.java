@@ -30,8 +30,8 @@ public class StressTestMemoryDBHTreeMap {
 	 */
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
-		Cache cache = new Cache(CacheType.MAPDB_MEMORY_DIRECT_HTREE_DOC, "temp.db", TestUtil.ONE_BILLION);
-		TestUtil.billionaire(cache);
+		MyCache cache = new MyCache(CacheType.MAPDB_MEMORY_DIRECT_HTREE_DOC, "temp.db", TestUtil.ONE_BILLION);
+		TestUtil.plentous(cache);
 		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
 
 	}

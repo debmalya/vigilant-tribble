@@ -36,34 +36,75 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 
 import com.couchbase.client.java.document.JsonDocument;
-import com.deb.cache.Cache;
+import com.deb.cache.MyCache;
 import com.deb.cache.CacheType;
 import com.deb.cache.TestUtil;
 
 public class MyBenchmark {
-	
+
 	private static final JsonDocument myDocument = TestUtil.createJsonDocument();
-	
+
 	@State(Scope.Benchmark)
 	public static class MapDBFileHolder {
-		public static  Cache mapDBCache;
-		static{
-			mapDBCache = new Cache(CacheType.MAPDB_FILE_TREEMAP_DOC, "temp.db", 1000000);
+		public static final MyCache mapDBCache;
+		static {
+			mapDBCache = new MyCache(CacheType.MAPDB_FILE_TREEMAP_DOC, "temp.db", 1000000);
+		}
+	}
+
+	@State(Scope.Benchmark)
+	public static class EhCacheHolder {
+		public static final MyCache ehCache;
+		static {
+			ehCache = new MyCache(CacheType.EHCACHE, "temp.db", 1000000);
 		}
 	}
 
 	/**
-	 * MyBenchmark.mapDBFile  thrpt  200  779.527 ± 18.967  ops/s
+	 * MyBenchmark.mapDBFile thrpt 200 779.527 ± 18.967 ops/s
 	 */
-    @Benchmark
-    public void mapDBFilePut() {
-        MapDBFileHolder.mapDBCache.put(TestUtil.generateRandomMSISDN(), myDocument);
-    }
-    
-    @Benchmark
-    public void mapDBFileGet() {
-        MapDBFileHolder.mapDBCache.get(TestUtil.generateRandomMSISDN());
-    }
+	@Benchmark
+	public void mapDBFilePut() {
+		MapDBFileHolder.mapDBCache.put(TestUtil.generateRandomMSISDN(), myDocument);
+	}
 
+	@Benchmark
+	public void mapDBFileGet() {
+		MapDBFileHolder.mapDBCache.get(TestUtil.generateRandomMSISDN());
+	}
+
+	@Benchmark
+	public void mapDBFileRemove() {
+		MapDBFileHolder.mapDBCache.remove(TestUtil.generateRandomMSISDN());
+	}
+
+	@Benchmark
+	public void ehcachePut() {
+		EhCacheHolder.ehCache.put(TestUtil.generateRandomMSISDN(), myDocument);
+	}
+
+	@Benchmark
+	public void ehcacheGet() {
+		EhCacheHolder.ehCache.get(TestUtil.generateRandomMSISDN());
+	}
+
+	@Benchmark
+	public void ehcacheRemove() {
+		EhCacheHolder.ehCache.remove(TestUtil.generateRandomMSISDN());
+	}
+
+	@Benchmark
+	public void mapDBFile() {
+		MapDBFileHolder.mapDBCache.put(TestUtil.generateRandomMSISDN(), myDocument);
+		MapDBFileHolder.mapDBCache.get(TestUtil.generateRandomMSISDN());
+		MapDBFileHolder.mapDBCache.remove(TestUtil.generateRandomMSISDN());
+	}
+
+	@Benchmark
+	public void ehcache() {
+		EhCacheHolder.ehCache.put(TestUtil.generateRandomMSISDN(), myDocument);
+		EhCacheHolder.ehCache.get(TestUtil.generateRandomMSISDN());
+		EhCacheHolder.ehCache.remove(TestUtil.generateRandomMSISDN());
+	}
 
 }

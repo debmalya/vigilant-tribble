@@ -19,38 +19,19 @@ package com.deb.cache;
  * @author debmalyajash
  *
  */
-public enum CacheType {
-	/**
-	 * MapDB 
-	 * 
-	 */
-	MAPDB_MEMORY_HTREE_DOC,
-	/**
-	 * MapDB in memory tree map containing String.
-	 */
-	MAPDB_MEMORY_TREEMAP_STR,
-	/**
-	 * MapDB file with BTreeMap containing JsonDocument.
-	 */
-	MAPDB_FILE_TREEMAP_DOC,
-	/**
-	 * MapDB file with BTreemap containing string.
-	 */
-	MAPDB_FILE_TREEMAP_STR,
+public class StressTestEhCache {
 	
-	/**
-	 * LRU linked hash Map.
-	 */
-	LRULINKED_HASH_MAP, 
 	
+
 	/**
-	 * To use ehcache
+	 * @param args
 	 */
-	EHCACHE,
-	
-	/**
-	 * MapDB Memory Direct DB
-	 */
-	MAPDB_MEMORY_DIRECT_HTREE_DOC;
-	
+	public static void main(String[] args) {
+		long startTime = System.currentTimeMillis();
+		MyCache cache = new MyCache(CacheType.EHCACHE, "temp.db", TestUtil.ONE_MILLION);
+		TestUtil.plentous(cache);
+		System.out.println("Thanks: time taken :" + (System.currentTimeMillis() - startTime));
+
+	}
+
 }

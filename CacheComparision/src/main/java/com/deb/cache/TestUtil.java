@@ -8,15 +8,14 @@ import java.util.Random;
 
 import com.couchbase.client.java.document.JsonDocument;
 
-
 /**
  * @author debmalyajash
  *
  */
 public class TestUtil {
-	
+
 	public static JsonDocument subscriberDocument = TestUtil.createJsonDocument();
-	
+
 	public static final long ONE_BILLION = 1000000000L;
 
 	public static final String serverIp = "192.168.251.171";
@@ -40,15 +39,13 @@ public class TestUtil {
 			+ "\"CUSTOMER_GROUP-L\":\"Residential\"," + "\"TARIFF_PLAN-L\":\"Standard Package\","
 			+ "\"AGE_GROUP-L\":\"40-50\"," + "\"GENDER-L\":\"Male\"," + "\"TWITTER_USERNAME-L\":\"@James_Smith\","
 			+ "\"EMAIL-L\":\"James.Smith@bogustel.com\"," + "\"PREFERRED_WORKOUT_METHOD-L\":\"WALKING\","
-			+ "\"DAILY_CALORIE_BURN_GOAL-L\":120,"
-			+ "\"DAILY_WORKOUT_SERIES-L\":{\"1461283200000\":{\"workoutMethod\":"
+			+ "\"DAILY_CALORIE_BURN_GOAL-L\":120," + "\"DAILY_WORKOUT_SERIES-L\":{\"1461283200000\":{\"workoutMethod\":"
 			+ "\"WALKING\",\"calorieBurnt\":60," + "\"startTime\":17,\"duration\":20,"
 			+ "\"caloriGoalAchievementPercentage\":50}," + "\"1461369600000\":{\"workoutMethod\":\"WALKING\","
 			+ "\"calorieBurnt\":50," + "\"startTime\":8," + "\"duration\":15,"
 			+ "\"caloriGoalAchievementPercentage\":41}," + "\"1461456000000\":" + "{\"workoutMethod\":\"WALKING\","
-			+ "\"calorieBurnt\":100,\"startTime\":7,"
-			+ "\"duration\":45,\"caloriGoalAchievementPercentage\":83}," + "\"1461542400000\":"
-			+ "{\"workoutMethod\":\"WALKING\"," + "\"calorieBurnt\":80,\"startTime\":8,"
+			+ "\"calorieBurnt\":100,\"startTime\":7," + "\"duration\":45,\"caloriGoalAchievementPercentage\":83},"
+			+ "\"1461542400000\":" + "{\"workoutMethod\":\"WALKING\"," + "\"calorieBurnt\":80,\"startTime\":8,"
 			+ "\"duration\":35," + "\"caloriGoalAchievementPercentage\":66}" + "},"
 			+ "\"AVERAGE_CALORIE_ACHIEVEMENT_PERCENTAGE-L\":60," + "\"DAYS_SINCE_LAST_WORKOUT-L\":2" + "}";
 	/*
@@ -72,19 +69,16 @@ public class TestUtil {
 			+ "\"para\":\"A meta-markup language, used to create markup languages such as DocBook.\","
 			+ "\"GlossSeeAlso\":[\"GML\",\"XML\"]" + "}," + "\"GlossSee\":\"markup\"" + "}" + "}" + "}" + "}" + "}";
 
-
-
-	public static final com.couchbase.client.java.document.json.JsonObject CSON_OBJ = createCsonObject(SUBSCRIBER_INDICATOR);
+	public static final com.couchbase.client.java.document.json.JsonObject CSON_OBJ = createCsonObject(
+			SUBSCRIBER_INDICATOR);
 	/**
 	 * 
 	 */
 	public static final int ONE_MILLION = 1000000;
 
-
-	
-	public static JsonDocument createJsonDocument() {		
+	public static JsonDocument createJsonDocument() {
 		return JsonDocument.create(generateRandomMSISDN(), CSON_OBJ);
-		
+
 	}
 
 	/**
@@ -110,27 +104,48 @@ public class TestUtil {
 		return com.couchbase.client.java.document.json.JsonObject.fromJson(csonString);
 	}
 
-	
-
 	/**
 	 * @param subscriberIndicator
 	 * @return
 	 */
 	public static JsonDocument createJsonDocument(String subscriberIndicator) {
-		
-		JsonDocument document = JsonDocument.create(generateRandomMSISDN(),CSON_OBJ);
-		
+
+		JsonDocument document = JsonDocument.create(generateRandomMSISDN(), CSON_OBJ);
+
 		return document;
 	}
-	
+
 	/**
 	 * To test cache with one billion put requests.
+	 * 
 	 * @param cache
 	 */
-	public static void billionaire(Cache cache) {
-		for (long i = 0; i < TestUtil.ONE_BILLION; i++) {
+	public static void billionaire(MyCache cache) {
+		for (long i = 0; i < ONE_BILLION; i++) {
 			try {
 				cache.put(TestUtil.generateRandomMSISDN(), subscriberDocument);
+			} catch (Throwable th) {
+				System.err.println("!! ERR, Sorry can not continue after " + i + " !!");
+				break;
+			}
+		}
+	}
+
+	/**
+	 * It has all type of operations (get,put,remove). Total number of
+	 * operations are one billion.
+	 * 
+	 * @param cache
+	 *            to operate on.
+	 */
+	public static void plentous(MyCache cache) {
+		for (long i = 0; i < ONE_BILLION; i++) {
+			try {
+
+				cache.put(TestUtil.generateRandomMSISDN(), subscriberDocument);
+				cache.get(TestUtil.generateRandomMSISDN());
+				cache.remove(TestUtil.generateRandomMSISDN());
+
 			} catch (Throwable th) {
 				System.err.println("!! ERR, Sorry can not continue after " + i + " !!");
 				break;

@@ -26,11 +26,19 @@ import org.mapdb.Serializer;
 
 import com.couchbase.client.java.document.JsonDocument;
 
+
+
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
+
 /**
  * @author debmalyajash
  *
  */
-public class Cache {
+public class MyCache {
 
 	private static DB db = null;
 
@@ -38,11 +46,21 @@ public class Cache {
 	private static BTreeMap<String, String> jsonStringTBreeMap;
 	private static HTreeMap<String, JsonDocument> jsonDocumentHTreeMap;
 	private static LRUPandaCache<String, JsonDocument> lruPandaCache;
+	
+	/**
+	 * This will hold ID/MSISDN as key and JsonObject as value.
+	 */
+	private static Cache<String, JsonDocument> ehcache;
+	
+	/**
+	 * Cache Manager.
+	 */
+	private CacheManager cacheManager = null;
 
-	private static CacheType cacheType;
+	private  CacheType cacheType;
 
 	@SuppressWarnings("unchecked")
-	public Cache(CacheType passedCacheType, String fileName, long starterSize) {
+	public MyCache(CacheType passedCacheType, String fileName, long starterSize) {
 		cacheType = passedCacheType;
 
 		switch (passedCacheType) {
@@ -74,7 +92,15 @@ public class Cache {
 					.expireAfterCreate(10,TimeUnit.MINUTES).createOrOpen();
 
 			break;
+			
+		case EHCACHE:
+			cacheManager = CacheManagerBuilder.newCacheManagerBuilder().withCache("ehcache", CacheConfigurationBuilder
+					.newCacheConfigurationBuilder(String.class, JsonDocument.class, ResourcePoolsBuilder.heap(starterSize))
+					.build()).build(true);
+			ehcache = cacheManager.getCache("ehcache", String.class, JsonDocument.class);
+			break;
 		default:
+			typeNotSupported();
 			break;
 		}
 	}
@@ -94,6 +120,9 @@ public class Cache {
 
 		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
 			jsonDocumentHTreeMap.put(key, value);
+			break;
+		case EHCACHE:
+			ehcache.put(key, value);
 			break;
 		default:
 			typeNotSupported();
@@ -120,6 +149,12 @@ public class Cache {
 		case MAPDB_MEMORY_HTREE_DOC:
 			document = jsonDocumentHTreeMap.get(key);
 			break;
+		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
+			jsonDocumentHTreeMap.get(key);
+			break;
+		case EHCACHE:
+			document = ehcache.get(key);
+			break;
 		default:
 			typeNotSupported();
 			break;
@@ -144,6 +179,12 @@ public class Cache {
 			break;
 		case MAPDB_MEMORY_HTREE_DOC:
 			document = jsonDocumentHTreeMap.remove(key);
+			break;
+		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
+			document = jsonDocumentHTreeMap.remove(key);
+			break;
+		case EHCACHE:
+			ehcache.remove(key);
 			break;
 		default:
 			typeNotSupported();
