@@ -59,48 +59,96 @@ public class MyBenchmark {
 			ehCache = new MyCache(CacheType.EHCACHE, "temp.db", 1000000);
 		}
 	}
+	
+	
+	@State(Scope.Benchmark)
+	public static class LRUMapHolder {
+		public static final MyCache lruCache;
+		static {
+			lruCache = new MyCache(CacheType.LRULINKED_HASH_MAP, "temp.db", 1000000);
+		}
+	}
+	
+	@State(Scope.Benchmark)
+	public static class GuavaCacheHolder {
+		public static final MyCache guavaCache;
+		static {
+			guavaCache = new MyCache(CacheType.GUAVA_CACHE, "temp.db", 1000000);
+		}
+	}
+	
 
 	/**
 	 * MyBenchmark.mapDBFile thrpt 200 779.527 ± 18.967 ops/s
 	 */
-	@Benchmark
+//	@Benchmark
 	public void mapDBFilePut() {
 		MapDBFileHolder.mapDBCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void mapDBFileGet() {
 		MapDBFileHolder.mapDBCache.get(TestUtil.generateRandomMSISDN());
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void mapDBFileRemove() {
 		MapDBFileHolder.mapDBCache.remove(TestUtil.generateRandomMSISDN());
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void ehcachePut() {
 		EhCacheHolder.ehCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void ehcacheGet() {
 		EhCacheHolder.ehCache.get(TestUtil.generateRandomMSISDN());
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void ehcacheRemove() {
 		EhCacheHolder.ehCache.remove(TestUtil.generateRandomMSISDN());
 	}
+	
+	@Benchmark
+	public void lruPut() {
+		LRUMapHolder.lruCache.put(TestUtil.generateRandomMSISDN(), myDocument);
+	}
 
 	@Benchmark
+	public void lruGet() {
+		LRUMapHolder.lruCache.get(TestUtil.generateRandomMSISDN());
+	}
+
+	@Benchmark
+	public void lruRemove() {
+		LRUMapHolder.lruCache.remove(TestUtil.generateRandomMSISDN());
+	}
+	
+	@Benchmark
+	public void guavaPut() {
+		GuavaCacheHolder.guavaCache.put(TestUtil.generateRandomMSISDN(), myDocument);
+	}
+
+	@Benchmark
+	public void guavaGet() {
+		GuavaCacheHolder.guavaCache.get(TestUtil.generateRandomMSISDN());
+	}
+
+	@Benchmark
+	public void guavaRemove() {
+		GuavaCacheHolder.guavaCache.remove(TestUtil.generateRandomMSISDN());
+	}
+
+//	@Benchmark
 	public void mapDBFile() {
 		MapDBFileHolder.mapDBCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 		MapDBFileHolder.mapDBCache.get(TestUtil.generateRandomMSISDN());
 		MapDBFileHolder.mapDBCache.remove(TestUtil.generateRandomMSISDN());
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void ehcache() {
 		EhCacheHolder.ehCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 		EhCacheHolder.ehCache.get(TestUtil.generateRandomMSISDN());

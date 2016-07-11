@@ -15,47 +15,21 @@
  */
 package com.deb.cache;
 
+import java.util.concurrent.Callable;
+
 /**
  * @author debmalyajash
+ * @param <V>
  *
  */
-public enum CacheType {
-	/**
-	 * MapDB 
-	 * 
+public class GuavaCacheMissCaller<V> implements Callable<V> {
+
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.Callable#call()
 	 */
-	MAPDB_MEMORY_HTREE_DOC,
-	/**
-	 * MapDB in memory tree map containing String.
-	 */
-	MAPDB_MEMORY_TREEMAP_STR,
-	/**
-	 * MapDB file with BTreeMap containing JsonDocument.
-	 */
-	MAPDB_FILE_TREEMAP_DOC,
-	/**
-	 * MapDB file with BTreemap containing string.
-	 */
-	MAPDB_FILE_TREEMAP_STR,
-	
-	/**
-	 * LRU linked hash Map.
-	 */
-	LRULINKED_HASH_MAP, 
-	
-	/**
-	 * To use ehcache
-	 */
-	EHCACHE,
-	
-	/**
-	 * Guava cache.
-	 */
-	GUAVA_CACHE,
-	
-	/**
-	 * MapDB Memory Direct DB
-	 */
-	MAPDB_MEMORY_DIRECT_HTREE_DOC;
-	
+	@Override
+	public V call() throws Exception {
+		throw new Exception("Key not found");
+	}
+
 }

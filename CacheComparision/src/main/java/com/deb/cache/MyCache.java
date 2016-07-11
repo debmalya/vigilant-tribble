@@ -26,8 +26,6 @@ import org.mapdb.Serializer;
 
 import com.couchbase.client.java.document.JsonDocument;
 
-
-
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -46,18 +44,20 @@ public class MyCache {
 	private static BTreeMap<String, String> jsonStringTBreeMap;
 	private static HTreeMap<String, JsonDocument> jsonDocumentHTreeMap;
 	private static LRUPandaCache<String, JsonDocument> lruPandaCache;
-	
+	private static HTreeMap<String, JsonDocument> jsonDocumentDirectHTreeMap;
+	private static GuavaCacheDao<String, JsonDocument> jsonDocumentGuava;
+
 	/**
 	 * This will hold ID/MSISDN as key and JsonObject as value.
 	 */
 	private static Cache<String, JsonDocument> ehcache;
-	
+
 	/**
 	 * Cache Manager.
 	 */
 	private CacheManager cacheManager = null;
 
-	private  CacheType cacheType;
+	private CacheType cacheType;
 
 	@SuppressWarnings("unchecked")
 	public MyCache(CacheType passedCacheType, String fileName, long starterSize) {
@@ -87,18 +87,24 @@ public class MyCache {
 
 		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
 			db = DBMaker.memoryDirectDB().make();
-			jsonDocumentHTreeMap = (HTreeMap<String, JsonDocument>) db.hashMap("MAPDB_MEMORY_HTREE_DOC")
+			jsonDocumentDirectHTreeMap = (HTreeMap<String, JsonDocument>) db.hashMap("MAPDB_MEMORY_HTREE_DOC")
 					.expireMaxSize(starterSize).keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA)
-					.expireAfterCreate(10,TimeUnit.MINUTES).createOrOpen();
+					.expireAfterCreate(10, TimeUnit.MINUTES).createOrOpen();
 
 			break;
-			
+
 		case EHCACHE:
-			cacheManager = CacheManagerBuilder.newCacheManagerBuilder().withCache("ehcache", CacheConfigurationBuilder
-					.newCacheConfigurationBuilder(String.class, JsonDocument.class, ResourcePoolsBuilder.heap(starterSize))
-					.build()).build(true);
+			cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+					.withCache("ehcache", CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class,
+							JsonDocument.class, ResourcePoolsBuilder.heap(starterSize)).build())
+					.build(true);
 			ehcache = cacheManager.getCache("ehcache", String.class, JsonDocument.class);
 			break;
+
+		case GUAVA_CACHE:
+			jsonDocumentGuava = new GuavaCacheDao<String, JsonDocument>(starterSize, 10);
+			break;
+
 		default:
 			typeNotSupported();
 			break;
@@ -112,17 +118,21 @@ public class MyCache {
 			document = jsonDocumentBTreeMap.put(key, value);
 			break;
 		case LRULINKED_HASH_MAP:
-			lruPandaCache.put(key, value);
+			document = lruPandaCache.put(key, value);
 			break;
 		case MAPDB_MEMORY_HTREE_DOC:
-			jsonDocumentHTreeMap.put(key, value);
+			document = jsonDocumentHTreeMap.put(key, value);
 			break;
 
 		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
-			jsonDocumentHTreeMap.put(key, value);
+			document = jsonDocumentDirectHTreeMap.put(key, value);
 			break;
 		case EHCACHE:
 			ehcache.put(key, value);
+			break;
+
+		case GUAVA_CACHE:
+			jsonDocumentGuava.put(key, value);
 			break;
 		default:
 			typeNotSupported();
@@ -150,10 +160,13 @@ public class MyCache {
 			document = jsonDocumentHTreeMap.get(key);
 			break;
 		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
-			jsonDocumentHTreeMap.get(key);
+			document = jsonDocumentDirectHTreeMap.get(key);
 			break;
 		case EHCACHE:
 			document = ehcache.get(key);
+			break;
+		case GUAVA_CACHE:
+			document = jsonDocumentGuava.get(key);
 			break;
 		default:
 			typeNotSupported();
@@ -181,10 +194,13 @@ public class MyCache {
 			document = jsonDocumentHTreeMap.remove(key);
 			break;
 		case MAPDB_MEMORY_DIRECT_HTREE_DOC:
-			document = jsonDocumentHTreeMap.remove(key);
+			document = jsonDocumentDirectHTreeMap.remove(key);
 			break;
 		case EHCACHE:
 			ehcache.remove(key);
+			break;
+		case GUAVA_CACHE:
+			jsonDocumentGuava.remove(key);
 			break;
 		default:
 			typeNotSupported();
@@ -217,5 +233,9 @@ public class MyCache {
 			break;
 		}
 		return document;
+	}
+
+	public double cacheHitRatio() {
+		return 0.00d;
 	}
 }

@@ -36,12 +36,15 @@ public class CacheTest {
 	private static MyCache lruPandaCache;
 
 	private static MyCache ehCache;
+	
+	private static MyCache guavaCache;
 
 	@BeforeClass
 	public static void init() {
 		myCache = new MyCache(CacheType.MAPDB_FILE_TREEMAP_DOC, "temp.db", TestUtil.ONE_MILLION);
 		lruPandaCache = new MyCache(CacheType.LRULINKED_HASH_MAP, "temp.db", TestUtil.ONE_MILLION);
 		ehCache = new MyCache(CacheType.EHCACHE, null, TestUtil.ONE_MILLION);
+		guavaCache = new MyCache(CacheType.GUAVA_CACHE, "temp.db", TestUtil.ONE_MILLION);
 	}
 
 	/**
@@ -54,6 +57,7 @@ public class CacheTest {
 		Assert.assertNotNull(myCache);
 		Assert.assertNotNull(lruPandaCache);
 		Assert.assertNotNull(ehCache);
+		Assert.assertNotNull(guavaCache);
 	}
 
 	/**
@@ -66,6 +70,7 @@ public class CacheTest {
 		myCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 		lruPandaCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 		ehCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
+		guavaCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 	}
 
 	/**
@@ -102,6 +107,12 @@ public class CacheTest {
 		Assert.assertEquals(msisdn + " content not matching ", TestUtil.createJsonDocument().content(),
 				lruPandaCache.get(msisdn).content());
 		lruPandaCache.remove(msisdn);
+		
+		stored = guavaCache.put(msisdn, TestUtil.createJsonDocument());
+		Assert.assertNull(stored);
+		Assert.assertEquals(msisdn + " content not matching ", TestUtil.createJsonDocument().content(),
+				guavaCache.get(msisdn).content());
+		guavaCache.remove(msisdn);
 
 		
 	}
