@@ -18,6 +18,11 @@ package com.deb.cache;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -25,12 +30,7 @@ import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
 import com.couchbase.client.java.document.JsonDocument;
-
-import org.ehcache.Cache;
-import org.ehcache.CacheManager;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
  * @author debmalyajash
@@ -46,6 +46,8 @@ public class MyCache {
 	private static LRUPandaCache<String, JsonDocument> lruPandaCache;
 	private static HTreeMap<String, JsonDocument> jsonDocumentDirectHTreeMap;
 	private static GuavaCacheDao<String, JsonDocument> jsonDocumentGuava;
+	private static com.github.benmanes.caffeine.cache.Cache<String, JsonDocument> caffeineCache = Caffeine.newBuilder()
+			.expireAfterWrite(10, TimeUnit.MINUTES).maximumSize(10_000).build();
 
 	/**
 	 * This will hold ID/MSISDN as key and JsonObject as value.
@@ -59,6 +61,8 @@ public class MyCache {
 
 	private CacheType cacheType;
 
+	// private SampledCache cacheStats = null;
+
 	@SuppressWarnings("unchecked")
 	public MyCache(CacheType passedCacheType, String fileName, long starterSize) {
 		cacheType = passedCacheType;
@@ -67,7 +71,7 @@ public class MyCache {
 		case MAPDB_FILE_TREEMAP_DOC:
 			File file = new File(fileName);
 			file.delete();
-			db = DBMaker.fileDB(fileName).fileMmapEnable().fileMmapEnableIfSupported().deleteFilesAfterClose().make();
+			db = DBMaker.fileDB(fileName).fileMmapEnable().fileMmapEnableIfSupported().make();
 			jsonDocumentBTreeMap = (BTreeMap<String, JsonDocument>) db.treeMap("MAPDB_FILE_TREEMAP_DOC")
 					.keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA).createOrOpen();
 			break;
@@ -99,12 +103,16 @@ public class MyCache {
 							JsonDocument.class, ResourcePoolsBuilder.heap(starterSize)).build())
 					.build(true);
 			ehcache = cacheManager.getCache("ehcache", String.class, JsonDocument.class);
+
 			break;
 
 		case GUAVA_CACHE:
 			jsonDocumentGuava = new GuavaCacheDao<String, JsonDocument>(starterSize, 10);
 			break;
 
+		case CAFFEINE:
+			caffeineCache = Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).maximumSize(starterSize).build();
+			break;
 		default:
 			typeNotSupported();
 			break;
@@ -133,6 +141,10 @@ public class MyCache {
 
 		case GUAVA_CACHE:
 			jsonDocumentGuava.put(key, value);
+			break;
+
+		case CAFFEINE:
+			caffeineCache.put(key, value);
 			break;
 		default:
 			typeNotSupported();
@@ -168,6 +180,9 @@ public class MyCache {
 		case GUAVA_CACHE:
 			document = jsonDocumentGuava.get(key);
 			break;
+		case CAFFEINE:
+			document = caffeineCache.getIfPresent(key);
+			break;
 		default:
 			typeNotSupported();
 			break;
@@ -201,6 +216,9 @@ public class MyCache {
 			break;
 		case GUAVA_CACHE:
 			jsonDocumentGuava.remove(key);
+			break;
+		case CAFFEINE:
+			caffeineCache.invalidate(key);
 			break;
 		default:
 			typeNotSupported();

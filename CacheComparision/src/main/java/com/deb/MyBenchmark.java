@@ -51,6 +51,22 @@ public class MyBenchmark {
 			mapDBCache = new MyCache(CacheType.MAPDB_FILE_TREEMAP_DOC, "temp.db", 1000000);
 		}
 	}
+	
+	@State(Scope.Benchmark)
+	public static class CaffenineHolder {
+		public static final MyCache caffenineCache;
+		static {
+			caffenineCache = new MyCache(CacheType.CAFFEINE, "temp.db", 1000000);
+		}
+	}
+	
+	@State(Scope.Benchmark)
+	public static class MapDBInDirectMemoryHolder {
+		public static final MyCache mapDBDirectMemory;
+		static {
+			mapDBDirectMemory = new MyCache(CacheType.MAPDB_MEMORY_DIRECT_HTREE_DOC, "temp.db", 1000000);
+		}
+	}
 
 	@State(Scope.Benchmark)
 	public static class EhCacheHolder {
@@ -112,31 +128,61 @@ public class MyBenchmark {
 	}
 	
 	@Benchmark
+	public void caffeinePut() {
+		CaffenineHolder.caffenineCache.put(TestUtil.generateRandomMSISDN(), myDocument);
+	}
+
+	@Benchmark
+	public void caffeineGet() {
+		CaffenineHolder.caffenineCache.get(TestUtil.generateRandomMSISDN());
+	}
+
+	@Benchmark
+	public void caffeineRemove() {
+		CaffenineHolder.caffenineCache.remove(TestUtil.generateRandomMSISDN());
+	}
+	
+//	@Benchmark
+	public void mapDBDirectMemoryPut() {
+		MapDBInDirectMemoryHolder.mapDBDirectMemory.put(TestUtil.generateRandomMSISDN(), myDocument);
+	}
+
+//	@Benchmark
+	public void mapDBDirectMemoryGet() {
+		MapDBInDirectMemoryHolder.mapDBDirectMemory.get(TestUtil.generateRandomMSISDN());
+	}
+
+//	@Benchmark
+	public void mapDBDirectMemoryRemove() {
+		MapDBInDirectMemoryHolder.mapDBDirectMemory.remove(TestUtil.generateRandomMSISDN());
+	}
+	
+//	@Benchmark
 	public void lruPut() {
 		LRUMapHolder.lruCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void lruGet() {
 		LRUMapHolder.lruCache.get(TestUtil.generateRandomMSISDN());
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void lruRemove() {
 		LRUMapHolder.lruCache.remove(TestUtil.generateRandomMSISDN());
 	}
 	
-	@Benchmark
+//	@Benchmark
 	public void guavaPut() {
 		GuavaCacheHolder.guavaCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void guavaGet() {
 		GuavaCacheHolder.guavaCache.get(TestUtil.generateRandomMSISDN());
 	}
 
-	@Benchmark
+//	@Benchmark
 	public void guavaRemove() {
 		GuavaCacheHolder.guavaCache.remove(TestUtil.generateRandomMSISDN());
 	}

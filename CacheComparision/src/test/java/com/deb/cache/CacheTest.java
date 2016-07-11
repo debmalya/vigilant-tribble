@@ -38,6 +38,8 @@ public class CacheTest {
 	private static MyCache ehCache;
 	
 	private static MyCache guavaCache;
+	
+	private static MyCache caffeineCache;
 
 	@BeforeClass
 	public static void init() {
@@ -45,6 +47,7 @@ public class CacheTest {
 		lruPandaCache = new MyCache(CacheType.LRULINKED_HASH_MAP, "temp.db", TestUtil.ONE_MILLION);
 		ehCache = new MyCache(CacheType.EHCACHE, null, TestUtil.ONE_MILLION);
 		guavaCache = new MyCache(CacheType.GUAVA_CACHE, "temp.db", TestUtil.ONE_MILLION);
+		caffeineCache = new MyCache(CacheType.CAFFEINE,"temp.db",TestUtil.ONE_MILLION);
 	}
 
 	/**
@@ -58,6 +61,7 @@ public class CacheTest {
 		Assert.assertNotNull(lruPandaCache);
 		Assert.assertNotNull(ehCache);
 		Assert.assertNotNull(guavaCache);
+		Assert.assertNotNull(caffeineCache);
 	}
 
 	/**
@@ -71,6 +75,7 @@ public class CacheTest {
 		lruPandaCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 		ehCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 		guavaCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
+		caffeineCache.put(TestUtil.generateRandomMSISDN(), TestUtil.createJsonDocument());
 	}
 
 	/**
@@ -113,6 +118,12 @@ public class CacheTest {
 		Assert.assertEquals(msisdn + " content not matching ", TestUtil.createJsonDocument().content(),
 				guavaCache.get(msisdn).content());
 		guavaCache.remove(msisdn);
+		
+		stored = caffeineCache.put(msisdn, TestUtil.createJsonDocument());
+		Assert.assertNull(stored);
+		Assert.assertEquals(msisdn + " content not matching ", TestUtil.createJsonDocument().content(),
+				caffeineCache.get(msisdn).content());
+		caffeineCache.remove(msisdn);
 
 		
 	}

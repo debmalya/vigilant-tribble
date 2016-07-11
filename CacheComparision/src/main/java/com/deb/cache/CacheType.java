@@ -49,6 +49,11 @@ public enum CacheType {
 	EHCACHE,
 	
 	/**
+	 * To use com.github.ben-manes.caffeine
+	 */
+	CAFFEINE,
+	
+	/**
 	 * Guava cache.
 	 */
 	GUAVA_CACHE,
