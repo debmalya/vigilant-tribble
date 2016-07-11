@@ -15,9 +15,10 @@
  */
 package com.deb.cache;
 
+import static org.junit.Assert.assertNull;
+
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.couchbase.client.java.document.JsonDocument;
@@ -29,7 +30,7 @@ import com.google.common.testing.FakeTicker;
  * @author debmalyajash
  *
  */
-public class TasteOfCaffeine {
+public class CaffeineTest {
 
 	@Test
 	public void test() {
@@ -44,7 +45,7 @@ public class TasteOfCaffeine {
 		String msisdn = TestUtil.generateRandomMSISDN();
 		cache.put(msisdn, TestUtil.subscriberDocument);
 		ticker.advance(30, TimeUnit.MINUTES);
-		Assert.assertNull(cache.getIfPresent(msisdn));
+		assertNull(cache.getIfPresent(msisdn));
 	}
 
 }
