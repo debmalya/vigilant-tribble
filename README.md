@@ -1,5 +1,5 @@
 # vigilant-tribble
-Comparison of different caching libraries (e.g. MapDB)
+Comparison of different caching libraries (e.g. MapDB,Guava,Caffeine,Ehcache)
 
 #### Measuring performance
 mvn clean package
