@@ -31,18 +31,26 @@
 
 package com.deb;
 
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
 
 import com.couchbase.client.java.document.JsonDocument;
-import com.deb.cache.MyCache;
 import com.deb.cache.CacheType;
+import com.deb.cache.MyCache;
 import com.deb.cache.TestUtil;
 
+@State(Scope.Benchmark)
 public class MyBenchmark {
 
 	private static final JsonDocument myDocument = TestUtil.createJsonDocument();
+	
+	private static final Callable<JsonDocument> valueLoader = () -> myDocument;
+	private static final Function<String, JsonDocument> mappingFunction = any -> myDocument;
 
 	@State(Scope.Benchmark)
 	public static class MapDBFileHolder {
@@ -117,7 +125,7 @@ public class MyBenchmark {
 		EhCacheHolder.ehCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 	}
 
-//	@Benchmark
+//	@Benchmark @Threads(16)
 	public void ehcacheGet() {
 		EhCacheHolder.ehCache.get(TestUtil.generateRandomMSISDN());
 	}
@@ -127,17 +135,17 @@ public class MyBenchmark {
 		EhCacheHolder.ehCache.remove(TestUtil.generateRandomMSISDN());
 	}
 	
-	@Benchmark
+	@Benchmark @Threads(16)
 	public void caffeinePut() {
 		CaffenineHolder.caffenineCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 	}
 
-	@Benchmark
+	@Benchmark @Threads(16)
 	public void caffeineGet() {
 		CaffenineHolder.caffenineCache.get(TestUtil.generateRandomMSISDN());
 	}
 
-	@Benchmark
+	@Benchmark @Threads(16)
 	public void caffeineRemove() {
 		CaffenineHolder.caffenineCache.remove(TestUtil.generateRandomMSISDN());
 	}
@@ -157,17 +165,17 @@ public class MyBenchmark {
 		MapDBInDirectMemoryHolder.mapDBDirectMemory.remove(TestUtil.generateRandomMSISDN());
 	}
 	
-//	@Benchmark
+	@Benchmark @Threads(16)
 	public void lruPut() {
 		LRUMapHolder.lruCache.put(TestUtil.generateRandomMSISDN(), myDocument);
 	}
 
-//	@Benchmark
+	@Benchmark @Threads(16)
 	public void lruGet() {
 		LRUMapHolder.lruCache.get(TestUtil.generateRandomMSISDN());
 	}
 
-//	@Benchmark
+	@Benchmark @Threads(16)
 	public void lruRemove() {
 		LRUMapHolder.lruCache.remove(TestUtil.generateRandomMSISDN());
 	}

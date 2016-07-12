@@ -144,7 +144,7 @@ public class MyCache {
 			break;
 
 		case CAFFEINE:
-			caffeineCache.put(key, value);
+			caffeineCache.put(key, value);		
 			break;
 		default:
 			typeNotSupported();
