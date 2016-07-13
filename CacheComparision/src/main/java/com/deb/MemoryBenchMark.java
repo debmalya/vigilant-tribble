@@ -74,17 +74,17 @@ public class MemoryBenchMark {
 		unbounded();
 		maximumSize();
 		maximumSize_expireAfterAccess();
-		// maximumSize_expireAfterWrite();
-		// maximumSize_refreshAfterWrite();
-		// maximumWeight();
-		// expireAfterAccess();
-		// expireAfterWrite();
-		// expireAfterAccess_expireAfterWrite();
-		// weakKeys();
-		// weakValues();
-		// weakKeys_weakValues();
-		// weakKeys_softValues();
-		// softValues();
+		maximumSize_expireAfterWrite();
+		maximumSize_refreshAfterWrite();
+		maximumWeight();
+		expireAfterAccess();
+		expireAfterWrite();
+		expireAfterAccess_expireAfterWrite();
+		weakKeys();
+		weakValues();
+		weakKeys_weakValues();
+		weakKeys_softValues();
+		softValues();
 	}
 
 	private Caffeine<Object, Object> builder() {
@@ -119,7 +119,6 @@ public class MemoryBenchMark {
 		Cache<String, JsonObject> caffeine = builder().build();
 		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().build();
 		LRUPandaCache<String, JsonObject> lruPandaCache = new LRUPandaCache<>(TestUtil.ONE_MILLION, 0.75f);
-		// compare("Unbounded", caffeine, guava);
 		compare("Unbounded", caffeine, lruPandaCache, guava);
 	}
 
@@ -137,6 +136,90 @@ public class MemoryBenchMark {
 		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder()
 				.expireAfterAccess(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE).build();
 		compare("Maximum Size & Expire after Access", caffeine, guava);
+	}
+
+	private void maximumSize_expireAfterWrite() {
+		Cache<String, JsonObject> caffeine = builder().expireAfterWrite(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE)
+				.build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder()
+				.expireAfterWrite(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE).build();
+		compare("Maximum Size & Expire after Write", caffeine, guava);
+	}
+
+	private void maximumSize_refreshAfterWrite() {
+		Cache<String, JsonObject> caffeine = builder().refreshAfterWrite(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE)
+				.build(k -> ourObject);
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder()
+				.refreshAfterWrite(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE)
+				.build(new com.google.common.cache.CacheLoader<String, JsonObject>() {
+					@Override
+					public JsonObject load(String key) {
+						return ourObject;
+					}
+				});
+		compare("Maximum Size & Refresh after Write", caffeine, guava);
+	}
+
+	private void maximumWeight() {
+		Cache<String, JsonObject> caffeine = builder().maximumWeight(MAXIMUM_SIZE).weigher((k, v) -> 1).build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().maximumWeight(MAXIMUM_SIZE)
+				.weigher((k, v) -> 1).build();
+
+		compare("Maximum Weight", caffeine, guava);
+	}
+
+	private void expireAfterAccess() {
+		Cache<String, JsonObject> caffeine = builder().expireAfterAccess(1, TimeUnit.MINUTES).build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder()
+				.expireAfterAccess(1, TimeUnit.MINUTES).build();
+		compare("Expire after Access", caffeine, guava);
+	}
+
+	private void expireAfterWrite() {
+		Cache<String, JsonObject> caffeine = builder().expireAfterWrite(1, TimeUnit.MINUTES).build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder()
+				.expireAfterWrite(1, TimeUnit.MINUTES).build();
+		compare("Expire after Write", caffeine, guava);
+	}
+
+	private void expireAfterAccess_expireAfterWrite() {
+		Cache<String, JsonObject> caffeine = builder().expireAfterAccess(1, TimeUnit.MINUTES)
+				.expireAfterWrite(1, TimeUnit.MINUTES).build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder()
+				.expireAfterAccess(1, TimeUnit.MINUTES).expireAfterWrite(1, TimeUnit.MINUTES).build();
+		compare("Expire after Access & after Write", caffeine, guava);
+	}
+
+	private void weakKeys() {
+		Cache<String, JsonObject> caffeine = builder().weakKeys().build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().weakKeys().build();
+		compare("Weak Keys", caffeine, guava);
+	}
+
+	private void weakValues() {
+		Cache<String, JsonObject> caffeine = builder().weakValues().build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().weakValues().build();
+		compare("Weak Values", caffeine, guava);
+	}
+
+	private void weakKeys_weakValues() {
+		Cache<String, JsonObject> caffeine = builder().weakKeys().weakValues().build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().weakKeys().weakValues()
+				.build();
+		compare("Weak Keys & Weak Values", caffeine, guava);
+	}
+
+	private void weakKeys_softValues() {
+		Cache<String, JsonObject> caffeine = builder().weakKeys().softValues().build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().weakKeys().softValues()
+				.build();
+		compare("Weak Keys & Soft Values", caffeine, guava);
+	}
+
+	private void softValues() {
+		Cache<String, JsonObject> caffeine = builder().softValues().build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().softValues().build();
+		compare("Soft Values", caffeine, guava);
 	}
 
 	private void compare(String label, Cache<String, JsonObject> caffeine, LRUPandaCache<String, JsonObject> pandaCache,
