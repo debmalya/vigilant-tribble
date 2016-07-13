@@ -20,6 +20,11 @@ public class LRUPandaCache<K,T> extends LinkedHashMap<K,T>  {
 		super( capacity, d, true );
 		this.capacity = capacity;
 	}
+	
+	public LRUPandaCache(){
+		super();
+		this.capacity = 16;
+	}
 
 	/**
 	 * removeEldestEntry() should be overridden by the user, otherwise it will

@@ -18,15 +18,16 @@ package com.deb;
 import java.io.PrintStream;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.github.jamm.MemoryMeter;
 import org.github.jamm.MemoryMeter.Guess;
 
+import com.deb.cache.LRUPandaCache;
 import com.deb.cache.TestUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -50,14 +51,15 @@ public class MemoryBenchMark {
 
 	private static final JsonObject ourObject = (JsonObject) new JsonParser().parse(TestUtil.SUBSCRIBER_INDICATOR);
 
-	final MemoryMeter meter = new MemoryMeter().withGuessing(Guess.FALLBACK_BEST).ignoreKnownSingletons().enableDebug();
+	final MemoryMeter meter = new MemoryMeter().withGuessing(Guess.FALLBACK_BEST).ignoreKnownSingletons();
 	final PrintStream out = System.out;
 
 	// The pre-computed entries to store into the cache when computing the
 	// per-entry overhead
-//	Stream<String> strStream = Arrays.as;
-//	static final Map<String, JsonObject> workingSet = IntStream.range(0, FUZZY_SIZE).boxed()
-//			.collect(Collectors.toMap(identity(), i -> ourObject));
+	// Stream<String> strStream = Arrays.as;
+	// static final Map<String, JsonObject> workingSet = IntStream.range(0,
+	// FUZZY_SIZE).boxed()
+	// .collect(Collectors.toMap(identity(), i -> ourObject));
 	static final Map<String, JsonObject> workingSet = createWorkingSet();
 
 	public static void main(String[] args) throws Exception {
@@ -70,8 +72,8 @@ public class MemoryBenchMark {
 		}
 		out.println();
 		unbounded();
-		// maximumSize();
-		// maximumSize_expireAfterAccess();
+		maximumSize();
+		maximumSize_expireAfterAccess();
 		// maximumSize_expireAfterWrite();
 		// maximumSize_refreshAfterWrite();
 		// maximumWeight();
@@ -90,10 +92,19 @@ public class MemoryBenchMark {
 		return Caffeine.newBuilder().executor(Runnable::run);
 	}
 
+	/**
+	 * During base calculation map is empty. After that map is populated.
+	 * Returns the memory usage including reference objects.
+	 * 
+	 * @param label
+	 *            - (Caffeine, Guava, PandaCache)
+	 * @param map
+	 *            - passed map.
+	 * @return total memory usage.
+	 */
 	private String[] evaluate(String label, Map<String, JsonObject> map) {
 		long base = meter.measureDeep(map);
-		Map<String,JsonObject> workingSet = new HashMap<String,JsonObject>();
-		map.putAll(workingSet );
+		map.putAll(workingSet);
 
 		long populated = meter.measureDeep(map);
 		long entryOverhead = 2 * FUZZY_SIZE * meter.measureDeep(workingSet.keySet().iterator().next());
@@ -107,7 +118,39 @@ public class MemoryBenchMark {
 	private void unbounded() {
 		Cache<String, JsonObject> caffeine = builder().build();
 		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().build();
-		compare("Unbounded", caffeine, guava);
+		LRUPandaCache<String, JsonObject> lruPandaCache = new LRUPandaCache<>(TestUtil.ONE_MILLION, 0.75f);
+		// compare("Unbounded", caffeine, guava);
+		compare("Unbounded", caffeine, lruPandaCache, guava);
+	}
+
+	private void maximumSize() {
+		Cache<String, JsonObject> caffeine = builder().maximumSize(MAXIMUM_SIZE).build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder().maximumSize(MAXIMUM_SIZE)
+				.build();
+		LRUPandaCache<String, JsonObject> lruPandaCache = new LRUPandaCache<>(TestUtil.ONE_MILLION, 0.75f);
+		compare("Maximum Size", caffeine, lruPandaCache, guava);
+	}
+
+	private void maximumSize_expireAfterAccess() {
+		Cache<String, JsonObject> caffeine = builder().expireAfterAccess(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE)
+				.build();
+		com.google.common.cache.Cache<String, JsonObject> guava = CacheBuilder.newBuilder()
+				.expireAfterAccess(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE).build();
+		compare("Maximum Size & Expire after Access", caffeine, guava);
+	}
+
+	private void compare(String label, Cache<String, JsonObject> caffeine, LRUPandaCache<String, JsonObject> pandaCache,
+			com.google.common.cache.Cache<String, JsonObject> guava) {
+		caffeine.cleanUp();
+		pandaCache.clear();
+		guava.cleanUp();
+
+		int leftPadded = Math.max((36 - label.length()) / 2 - 1, 1);
+		out.printf(" %2$-" + leftPadded + "s %s%n", label, " ");
+		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry" },
+				new String[][] { evaluate("Caffeine", caffeine.asMap()), evaluate("Guava", guava.asMap()),
+						evaluate("PandaCache", pandaCache) });
+		out.println(result);
 	}
 
 	private void compare(String label, Cache<String, JsonObject> caffeine,
@@ -121,17 +164,15 @@ public class MemoryBenchMark {
 				new String[][] { evaluate("Caffeine", caffeine.asMap()), evaluate("Guava", guava.asMap()) });
 		out.println(result);
 	}
-	
+
 	private static Map<String, JsonObject> createWorkingSet() {
 		List<String> msisdnList = new ArrayList<>();
 		for (int i = 0; i < FUZZY_SIZE; i++) {
-			msisdnList.add( ""+i);
+			msisdnList.add("" + i);
 		}
-		Map<String, JsonObject> workingSet = msisdnList.stream().collect(Collectors.toMap(Function.identity(), i-> ourObject));
+		Map<String, JsonObject> workingSet = msisdnList.stream()
+				.collect(Collectors.toMap(Function.identity(), i -> ourObject));
 		return workingSet;
 	}
-	
-	
 
-	
 }
