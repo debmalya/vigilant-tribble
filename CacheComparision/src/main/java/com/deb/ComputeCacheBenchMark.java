@@ -48,7 +48,7 @@ import com.google.common.cache.CacheBuilder;
  *
  */
 @State(Scope.Benchmark)
-public class CacheBenchMark {
+public class ComputeCacheBenchMark {
 
 	static final int SIZE = (2 << 14);
 	static final int MASK = SIZE - 1;
@@ -66,7 +66,7 @@ public class CacheBenchMark {
 	@Param({ "ConcurrentHashMap", "Caffeine", "Guava", "MapDB", "EhCache" })
 	String computeType;
 
-	public CacheBenchMark() {
+	public ComputeCacheBenchMark() {
 		msisdns = new String[SIZE];
 
 		for (int i = 0; i < SIZE; i++) {
