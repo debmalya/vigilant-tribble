@@ -41,7 +41,7 @@ import com.jakewharton.fliptables.FlipTable;
  * @author debmalyajash
  *
  */
-public class MemoryBenchMark {
+public class MemoryBenchMarkGSON {
 
 	// The number of entries added to minimize skew due to non-entry factors
 	static final int FUZZY_SIZE = 25_000;
@@ -63,7 +63,7 @@ public class MemoryBenchMark {
 	static final Map<String, JsonObject> workingSet = createWorkingSet();
 
 	public static void main(String[] args) throws Exception {
-		new MemoryBenchMark().run();
+		new MemoryBenchMarkGSON().run();
 	}
 
 	public void run() throws Exception {
@@ -107,12 +107,13 @@ public class MemoryBenchMark {
 		map.putAll(workingSet);
 
 		long populated = meter.measureDeep(map);
+		long noOfChilderen = meter.countChildren(map);
 		long entryOverhead = 2 * FUZZY_SIZE * meter.measureDeep(workingSet.keySet().iterator().next());
 		long perEntry = LongMath.divide(populated - entryOverhead - base, FUZZY_SIZE, RoundingMode.HALF_EVEN);
 		perEntry += ((perEntry & 1) == 0) ? 0 : 1;
 		long aligned = ((perEntry % 8) == 0) ? perEntry : ((1 + perEntry / 8) * 8);
 		return new String[] { label, String.format("%,d bytes", base),
-				String.format("%,d bytes (%,d aligned)", perEntry, aligned) };
+				String.format("%,d bytes (%,d aligned)", perEntry, aligned), String.format("%,d ", noOfChilderen) };
 	}
 
 	private void unbounded() {
@@ -230,7 +231,7 @@ public class MemoryBenchMark {
 
 		int leftPadded = Math.max((36 - label.length()) / 2 - 1, 1);
 		out.printf(" %2$-" + leftPadded + "s %s%n", label, " ");
-		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry" },
+		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry", "No. of Children" },
 				new String[][] { evaluate("Caffeine", caffeine.asMap()), evaluate("Guava", guava.asMap()),
 						evaluate("PandaCache", pandaCache) });
 		out.println(result);
@@ -243,7 +244,7 @@ public class MemoryBenchMark {
 
 		int leftPadded = Math.max((36 - label.length()) / 2 - 1, 1);
 		out.printf(" %2$-" + leftPadded + "s %s%n", label, " ");
-		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry" },
+		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry","No. of Children" },
 				new String[][] { evaluate("Caffeine", caffeine.asMap()), evaluate("Guava", guava.asMap()) });
 		out.println(result);
 	}
