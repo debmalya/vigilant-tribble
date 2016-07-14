@@ -100,12 +100,13 @@ public class MemoryBenchMarkJsonDocument {
 		map.putAll(workingSet);
 
 		long populated = meter.measureDeep(map);
+		long noOfChildren = meter.countChildren(map);
 		long entryOverhead = 2 * FUZZY_SIZE * meter.measureDeep(workingSet.keySet().iterator().next());
 		long perEntry = LongMath.divide(populated - entryOverhead - base, FUZZY_SIZE, RoundingMode.HALF_EVEN);
 		perEntry += ((perEntry & 1) == 0) ? 0 : 1;
 		long aligned = ((perEntry % 8) == 0) ? perEntry : ((1 + perEntry / 8) * 8);
 		return new String[] { label, String.format("%,d bytes", base),
-				String.format("%,d bytes (%,d aligned)", perEntry, aligned) };
+				String.format("%,d bytes (%,d aligned)", perEntry, aligned), String.format("%,d ", noOfChildren) };
 	}
 
 	private void unbounded() {
@@ -124,8 +125,8 @@ public class MemoryBenchMarkJsonDocument {
 	}
 
 	private void maximumSize_expireAfterAccess() {
-		Cache<String, JsonDocument> caffeine = builder().expireAfterAccess(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE)
-				.build();
+		Cache<String, JsonDocument> caffeine = builder().expireAfterAccess(1, TimeUnit.MINUTES)
+				.maximumSize(MAXIMUM_SIZE).build();
 		com.google.common.cache.Cache<String, JsonDocument> guava = CacheBuilder.newBuilder()
 				.expireAfterAccess(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE).build();
 		compare("Maximum Size & Expire after Access", caffeine, guava);
@@ -140,8 +141,8 @@ public class MemoryBenchMarkJsonDocument {
 	}
 
 	private void maximumSize_refreshAfterWrite() {
-		Cache<String, JsonDocument> caffeine = builder().refreshAfterWrite(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE)
-				.build(k -> ourObject);
+		Cache<String, JsonDocument> caffeine = builder().refreshAfterWrite(1, TimeUnit.MINUTES)
+				.maximumSize(MAXIMUM_SIZE).build(k -> ourObject);
 		com.google.common.cache.Cache<String, JsonDocument> guava = CacheBuilder.newBuilder()
 				.refreshAfterWrite(1, TimeUnit.MINUTES).maximumSize(MAXIMUM_SIZE)
 				.build(new com.google.common.cache.CacheLoader<String, JsonDocument>() {
@@ -155,8 +156,8 @@ public class MemoryBenchMarkJsonDocument {
 
 	private void maximumWeight() {
 		Cache<String, JsonDocument> caffeine = builder().maximumWeight(MAXIMUM_SIZE).weigher((k, v) -> 1).build();
-		com.google.common.cache.Cache<String, JsonDocument> guava = CacheBuilder.newBuilder().maximumWeight(MAXIMUM_SIZE)
-				.weigher((k, v) -> 1).build();
+		com.google.common.cache.Cache<String, JsonDocument> guava = CacheBuilder.newBuilder()
+				.maximumWeight(MAXIMUM_SIZE).weigher((k, v) -> 1).build();
 
 		compare("Maximum Weight", caffeine, guava);
 	}
@@ -215,15 +216,15 @@ public class MemoryBenchMarkJsonDocument {
 		compare("Soft Values", caffeine, guava);
 	}
 
-	private void compare(String label, Cache<String, JsonDocument> caffeine, LRUPandaCache<String, JsonDocument> pandaCache,
-			com.google.common.cache.Cache<String, JsonDocument> guava) {
+	private void compare(String label, Cache<String, JsonDocument> caffeine,
+			LRUPandaCache<String, JsonDocument> pandaCache, com.google.common.cache.Cache<String, JsonDocument> guava) {
 		caffeine.cleanUp();
 		pandaCache.clear();
 		guava.cleanUp();
 
 		int leftPadded = Math.max((36 - label.length()) / 2 - 1, 1);
 		out.printf(" %2$-" + leftPadded + "s %s%n", label, " ");
-		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry" },
+		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry", "No. of children" },
 				new String[][] { evaluate("Caffeine", caffeine.asMap()), evaluate("Guava", guava.asMap()),
 						evaluate("PandaCache", pandaCache) });
 		out.println(result);
@@ -236,7 +237,7 @@ public class MemoryBenchMarkJsonDocument {
 
 		int leftPadded = Math.max((36 - label.length()) / 2 - 1, 1);
 		out.printf(" %2$-" + leftPadded + "s %s%n", label, " ");
-		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry" },
+		String result = FlipTable.of(new String[] { "Cache", "Baseline", "Per Entry", "No. of children" },
 				new String[][] { evaluate("Caffeine", caffeine.asMap()), evaluate("Guava", guava.asMap()) });
 		out.println(result);
 	}
