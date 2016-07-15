@@ -28,7 +28,7 @@
 	<version>1.0</version>
 	<packaging>jar</packaging>
 
-	<name>JMH benchmark for: Cache (LRU (LinkedHashMap,MapDB,EhCache,GuavaCache))</name>
+	<name>JMH benchmark for: Cache (LRU (LinkedHashMap,MapDB,EhCache,GuavaCache,Caffeine))</name>
 
 	<!-- This is the demo/sample template build script for building Java benchmarks 
 		with JMH. Edit as needed. -->
